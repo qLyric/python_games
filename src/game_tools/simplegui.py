@@ -598,7 +598,7 @@ if __name__ == '__main__':
     
     image_info1 = Image_Info(get_image_path('medium_gear.png'), (400,400)) 
     def print_event(name, event_info):
-        print name, event_info
+        print(name), event_info
         
     def draw(canvas):
         canvas.draw_text('Hello', (200,200), 16, 'white', 'serif')
