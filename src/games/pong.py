@@ -232,10 +232,10 @@ def set_difficulty(mode):
     """ Sets the computer's difficulty mode. """
     global difficulty_mode, DT_AHEAD, COMPUTER_PADDLE_FACTOR
     difficulty_mode = mode
-    if difficulty_mode is "Medium":
+    if difficulty_mode == "Medium":
         DT_AHEAD = 2
         COMPUTER_PADDLE_FACTOR = 1
-    elif difficulty_mode is "Difficult":
+    elif difficulty_mode == "Difficult":
         DT_AHEAD = 5
         COMPUTER_PADDLE_FACTOR = 0.75
     else:
@@ -321,9 +321,9 @@ def pause():
 
 def change_difficulty():
     """ Changes the computer's difficulty. """
-    if difficulty_mode is "Easy":
+    if difficulty_mode == "Easy":
         set_difficulty("Medium")
-    elif difficulty_mode is "Medium":
+    elif difficulty_mode == "Medium":
         set_difficulty("Difficult")
     else:
         set_difficulty("Easy")
@@ -364,9 +364,9 @@ def setup():
     #frame.add_label(" ")
     frame.add_button("Mute",mute, 0.9*BUTTON_W, BUTTON_FONT_H)
     
-    sound_beeep = simplegui.Sound('https://dl.dropboxusercontent.com/u/22969407/sounds_ping_pong_8bit/ping_pong_8bit_beeep.ogg')
-    sound_peeeeeep = simplegui.Sound('https://dl.dropboxusercontent.com/u/22969407/sounds_ping_pong_8bit/ping_pong_8bit_peeeeeep.ogg')
-    sound_plop = simplegui.Sound('https://dl.dropboxusercontent.com/u/22969407/sounds_ping_pong_8bit/ping_pong_8bit_plop.ogg')
+    #sound_beeep = simplegui.Sound('https://dl.dropboxusercontent.com/u/22969407/sounds_ping_pong_8bit/ping_pong_8bit_beeep.ogg')
+    #sound_peeeeeep = simplegui.Sound('https://dl.dropboxusercontent.com/u/22969407/sounds_ping_pong_8bit/ping_pong_8bit_peeeeeep.ogg')
+    #sound_plop = simplegui.Sound('https://dl.dropboxusercontent.com/u/22969407/sounds_ping_pong_8bit/ping_pong_8bit_plop.ogg')
     
     return frame
 
