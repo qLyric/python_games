@@ -26,6 +26,9 @@ IMAGES_ON = True
 game_over = False
 game_paused = False
 move_count = 0
+score = 0
+high_score = 0
+POINTS_PER_FOOD = 10
 snake = None
 food = None
 
@@ -49,7 +52,6 @@ def draw_head(head, canvas):
     
 def draw_tail(tail, canvas):
     '''Draws the tail'''
-    #tail.draw(canvas,default=True)
     tri_pts = [tail.rotate_offset([ 0.5*tail.size[0],  0.5*tail.size[1]]),
                tail.rotate_offset([ 0.5*tail.size[0], -0.5*tail.size[1]]),
                tail.rotate_offset([-0.5*tail.size[0],                0.])]
@@ -73,7 +75,7 @@ class Snake(object):
         self.tail = None
         self.size = (unit_size,unit_size)
         self.color = color
-        self.controls = dict([('left',1),('right',-1)])
+        self.controls = {'left': 1, 'right': -1, 'a': 1, 'd': -1}
         
     
     def update(self):
@@ -88,10 +90,9 @@ class Snake(object):
                 new_seg.image = self.images['right']
             self.neck.rot = self.head.rot
         self.neck.pos = self.head.pos
-        if self.eat_food():
-            self.body.append(new_seg)
-        else:
-            self.body.append(new_seg)
+        ate_food = self.eat_food()
+        self.body.append(new_seg)
+        if not ate_food:
             old_seg = self.body.pop(0)
             if self.tail:
                 self.tail.pos = old_seg.pos
@@ -101,7 +102,6 @@ class Snake(object):
             self.tail = self.body.pop(0)
             self.tail.name = 'tail'
             self.tail.draw_method = draw_tail
-            #self.tail.image = None
             self.tail.image = self.images['tail']
         
     def draw(self, canvas):
@@ -116,9 +116,11 @@ class Snake(object):
             
     def eat_food(self):
         '''Eats the food if the head finds it'''
-        global food
+        global food, score, high_score
         if food and self.head.pos == food.pos:
             food = None
+            score += POINTS_PER_FOOD
+            high_score = max(high_score, score)
             return True
         else:
             return False
@@ -134,25 +136,18 @@ class Snake(object):
     
     def control(self, key):
         '''Accept a control input'''
-        if self.controls.has_key(key):
+        if key in self.controls:
             self.turn(self.controls[key])
         
     def check_collision(self):
         '''Check for collisions with the snake body'''
-        if any([seg.pos == self.head.pos for seg in self.body]):          
+        head_pos = self.head.pos
+        if self.tail and self.tail.pos == head_pos:
             return True
-        elif self.tail and self.tail.pos == self.head.pos:
-            return True
-        else:
-            return False
+        return any(seg.pos == head_pos for seg in self.body)
     
     def is_on(self, other_sprite):
         '''Checks to see if the any part of the snake is on the position'''
-#         if self.head.pos == pos:
-#             return True
-#         if self.tail and self.tail.pos == pos:
-#             return True
-#         return any([seg.pos==pos for seg in self.body])
         if self.head.overlaps(other_sprite):
             return True
         if self.tail and self.tail.overlaps(other_sprite):
@@ -168,13 +163,17 @@ def new_food():
 
 def new_game():
     '''Create a new game'''
-    global snake, food
+    global snake, food, score, game_over, move_count
     food = None
-    snake = Snake(rand_pos(),images=images)
+    score = 0
+    game_over = False
+    move_count = 0
+    snake = Snake(rand_pos(), images=images)
 
 def rand_pos():
     '''Creates a random position on the board'''
-    return [random.randrange(WIDTH/UNIT)*UNIT + 0.5*UNIT,random.randrange(HEIGHT/UNIT)*UNIT + 0.5*UNIT]
+    return [random.randrange(WIDTH // UNIT) * UNIT + 0.5 * UNIT,
+            random.randrange(HEIGHT // UNIT) * UNIT + 0.5 * UNIT]
 
 def key_down(key):
     '''Key down Handler'''
@@ -183,10 +182,11 @@ def key_down(key):
 
 def key_up(key):
     '''Key up handler'''
-    global game_paused
+    global game_paused, game_over
     if key == 'space':
         game_paused = not game_paused
     elif key == 'return':
+        game_over = False
         new_game()
 
 def mouse_click(pos):
@@ -206,7 +206,9 @@ def draw(canvas):
     
     food.draw(canvas)
     snake.draw(canvas)
-        
+    canvas.draw_text('Score: {0}   Best: {1}'.format(score, high_score),
+                     [10, 8], 18, 'White')
+
     if not game_over:
         move_count = (move_count + 1) % MOVE_COUNT
         if not game_paused and move_count == 0:
@@ -216,7 +218,10 @@ def draw(canvas):
                 
     else:
         canvas.draw_rect([0.2*WIDTH,0.5*HEIGHT-UNIT],[0.6*WIDTH,2*UNIT],0,(128,128,128),(128,128,128))
-        canvas.draw_text('GAME OVER',[WIDTH/2,HEIGHT/2],40,'White',align=('center','middle'))
+        canvas.draw_text('GAME OVER',[WIDTH // 2, HEIGHT // 2],40,'White',align=('center','middle'))
+        canvas.draw_text('Clique ou pressione ENTER para reiniciar',
+                         [WIDTH // 2, HEIGHT // 2 + 1.5 * UNIT], 16, 'White',
+                         align=('center','middle'))
         
     if AUTO_SCREEN_SHOT and move_count == 0 and not game_paused and not game_over:
         frame.screen_shot()
@@ -236,9 +241,9 @@ def setup():
     
     #configure images
     if IMAGES_ON:
-        images = dict([(key, simplegui.Image(image_info)) for key, image_info in image_infos.iteritems()])
+        images = dict([(key, simplegui.Image(image_info)) for key, image_info in image_infos.items()])
     else:
-        images = dict([(key, None) for key, image_info in image_infos.iteritems()])
+        images = dict([(key, None) for key, image_info in image_infos.items()])
         
     if SCREEN_SHOT_FILE:
         frame.set_screen_shot_file(SCREEN_SHOT_FILE)
